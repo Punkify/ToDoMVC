@@ -64,7 +64,7 @@ class ToDoViewController: UIViewController {
             self.todoItem.dateCreated.append(self.currentDate())
             self.todoItem.taskName.append(textValue!)
             
-            UserDefaults.standard.set(self.todoItem.taskName, forKey: "defaultKey")
+            UserDefaults.standard.set(self.todoItem.taskName, forKey: "taskKey")
             UserDefaults.standard.set(self.todoItem.dateCreated, forKey: "currentDate")
             
             
@@ -100,9 +100,9 @@ extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
         let cell = todoTableView.dequeueReusableCell(withIdentifier: "ToDoCell", for: indexPath) as! ToDoTableViewCell
         
     
-        if let arrayOfText =  UserDefaults.standard.array(forKey: "defaultKey") {
+        if let taskName =  UserDefaults.standard.array(forKey: "taskKey") {
         
-            cell.taskToDoLabel.text = arrayOfText[indexPath.row] as! String
+            cell.taskToDoLabel.text = taskName[indexPath.row] as! String
             
         }
       if  let dateCreated =  UserDefaults.standard.array(forKey: "currentDate")  {
@@ -118,9 +118,9 @@ extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let vc = storyboard?.instantiateViewController(withIdentifier: "DetailViewController") as! TODODetailViewController
-        vc.detailLabel = todoItem.taskName[indexPath.row]
-        self.present(vc, animated: true, completion: nil)
+        let detailviewcontroller = storyboard?.instantiateViewController(withIdentifier: "DetailViewController") as! TODODetailViewController
+        detailviewcontroller.detailLabel = todoItem.taskName[indexPath.row]
+        self.present(detailviewcontroller, animated: true, completion: nil)
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -128,7 +128,9 @@ extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
    }
 
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        
        let editAction = UITableViewRowAction(style: .default, title: "Edit", handler: { (action, indexPath) in
+           
            let alert = UIAlertController(title: "", message: "Edit list item", preferredStyle: .alert)
            alert.addTextField(configurationHandler: { (textField) in
                textField.text = self.todoItem.taskName[indexPath.row]
