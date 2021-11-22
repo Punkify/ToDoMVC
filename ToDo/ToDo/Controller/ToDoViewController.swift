@@ -8,6 +8,10 @@
 import UIKit
 import CloudKit
 
+protocol InformingDelegate {
+    func valueChanged(_ newString:String) -> String
+}
+
 class ToDoViewController: UIViewController {
 
     @IBOutlet weak var todoTableView: UITableView!
@@ -15,24 +19,29 @@ class ToDoViewController: UIViewController {
     @IBOutlet weak var navigationBar: UINavigationItem!
    
 
-    
+    var delegate: InformingDelegate?
     
     
     var todoItem:TodoItem = TodoItem()
 
-    
+    var dateEnded:String = ""
   
     override func viewDidLoad() {
         super.viewDidLoad()
         
         
         // Do any additional setup after loading the view.
-        
+    
         todoItem = TodoItem()
         
         setupNavigationBar()
+       
         
+    }
+    
+    func callFromOtherClass() {
         
+//value = self.delegate?.valueChanged()
     }
 
     
@@ -44,6 +53,12 @@ class ToDoViewController: UIViewController {
     }
     
     @objc func addNotesButtonTapped(){
+//
+//        print("the new end date is", delegate?.valueChanged())
+        
+       // print("the delegate method has been called" delegate?.valueChanged(dateEnded))
+        let vc1 = CheckBox()
+        print("the changed  date is", vc1.changedDate)
         
         let alert = UIAlertController(title: "Enter Your to do item", message: "", preferredStyle: .alert)
 
@@ -66,9 +81,10 @@ class ToDoViewController: UIViewController {
             
             UserDefaults.standard.set(self.todoItem.taskName, forKey: "taskKey")
             UserDefaults.standard.set(self.todoItem.dateCreated, forKey: "currentDate")
+        
+          
             
-            
-            self.todoTableView.reloadData()
+            self.todoTableView.reloadData() 
         }))
 
        
@@ -82,7 +98,7 @@ class ToDoViewController: UIViewController {
 
 extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
     
-    func currentDate() -> String{
+    public func currentDate() -> String{
         
         let date = Date()
         let dateFormatter = DateFormatter()
@@ -119,7 +135,9 @@ extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         let detailviewcontroller = storyboard?.instantiateViewController(withIdentifier: "DetailViewController") as! TODODetailViewController
+        
         detailviewcontroller.detailLabel = todoItem.taskName[indexPath.row]
+        
         self.present(detailviewcontroller, animated: true, completion: nil)
     }
     
@@ -130,14 +148,18 @@ extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         
        let editAction = UITableViewRowAction(style: .default, title: "Edit", handler: { (action, indexPath) in
-           
+           DispatchQueue.main.async {
+               self.todoTableView.reloadData()
+           }
            let alert = UIAlertController(title: "", message: "Edit list item", preferredStyle: .alert)
            alert.addTextField(configurationHandler: { (textField) in
                textField.text = self.todoItem.taskName[indexPath.row]
+               
            })
            alert.addAction(UIAlertAction(title: "Update", style: .default, handler: { (updateAction) in
                self.todoItem.taskName[indexPath.row] = alert.textFields!.first!.text!
                self.todoTableView.reloadRows(at: [indexPath], with: .fade)
+              
            }))
            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
            self.present(alert, animated: false)
@@ -145,11 +167,15 @@ extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
 
        let deleteAction = UITableViewRowAction(style: .default, title: "Delete", handler: { (action, indexPath) in
            self.todoItem.taskName.remove(at: indexPath.row)
-           tableView.reloadData()
+           DispatchQueue.main.async {
+               self.todoTableView.reloadData()
+           }
+      
        })
 
        return [deleteAction, editAction]
    }
+    
     
 }
 
