@@ -23,8 +23,6 @@ class ToDoDetailViewController: UIViewController {
     
     var dateEnded: String = ""
     
-   
-    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -32,8 +30,6 @@ class ToDoDetailViewController: UIViewController {
         dateCreatedLabel.text = dateCreated
        
     }
-    
-  
     
     @IBAction func switchProgress(_ sender: Any) {
         
