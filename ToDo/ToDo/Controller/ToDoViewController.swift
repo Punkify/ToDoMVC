@@ -6,138 +6,90 @@
 //
 
 import UIKit
-import CloudKit
-
-protocol InformingDelegate {
-    func valueChanged(_ newString:String) -> String
-}
 
 class ToDoViewController: UIViewController {
 
     @IBOutlet weak var todoTableView: UITableView!
     
     @IBOutlet weak var navigationBar: UINavigationItem!
-   
-
-    var delegate: InformingDelegate?
     
+    var todos: [TodoItem] = []
     
-    var todoItem:TodoItem = TodoItem()
-
-    var dateEnded:String = ""
-  
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        // Do any additional setup after loading the view.
-    
-        todoItem = TodoItem()
-        
         setupNavigationBar()
-       
         
-    }
-    
-    func callFromOtherClass() {
-        
-//value = self.delegate?.valueChanged()
-    }
-
+        }
     
     func setupNavigationBar(){
         
     navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add Notes", style: .plain, target: self, action: #selector(addNotesButtonTapped))
+        
     navigationItem.rightBarButtonItem?.tintColor = .black
         
     }
     
     @objc func addNotesButtonTapped(){
-//
-//        print("the new end date is", delegate?.valueChanged())
-        
-       // print("the delegate method has been called" delegate?.valueChanged(dateEnded))
-        let vc1 = CheckBox()
-        print("the changed  date is", vc1.changedDate)
         
         let alert = UIAlertController(title: "Enter Your to do item", message: "", preferredStyle: .alert)
 
-      
         alert.addTextField { (textField) in
-            textField.text = "to do: "
+            textField.text = "To Do: "
         }
-
         
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak alert] (_) in
             
-            let textField = alert?.textFields![0] // Force unwrapping because we know it exists.
-            let textValue = textField?.text
+            guard let textField = alert?.textFields?[0] else{
+                return
+            }
             
-           
+            guard let textValue = textField.text else {
+                return
+            }
             
-           
-            self.todoItem.dateCreated.append(self.currentDate())
-            self.todoItem.taskName.append(textValue!)
+             let todoitem = TodoItem(taskName: textValue)
             
-            UserDefaults.standard.set(self.todoItem.taskName, forKey: "taskKey")
-            UserDefaults.standard.set(self.todoItem.dateCreated, forKey: "currentDate")
-        
-          
+            self.todos.append(todoitem)
             
-            self.todoTableView.reloadData() 
+            self.todoTableView.reloadData()
+            
         }))
-
        
         self.present(alert, animated: true, completion: nil)
     }
     
-    
-   
-    
 }
 
-extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
-    
-    public func currentDate() -> String{
-        
-        let date = Date()
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd/MM/yyyy"
-        let dateToString = dateFormatter.string(from: date)
-        return dateToString
-    }
+extension ToDoViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return (todoItem.taskName.count)
+        return (todos.count)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-         
+       
+        let item = todos[indexPath.row]
         let cell = todoTableView.dequeueReusableCell(withIdentifier: "ToDoCell", for: indexPath) as! ToDoTableViewCell
-        
-    
-        if let taskName =  UserDefaults.standard.array(forKey: "taskKey") {
-        
-            cell.taskToDoLabel.text = taskName[indexPath.row] as! String
-            
-        }
-      if  let dateCreated =  UserDefaults.standard.array(forKey: "currentDate")  {
-            
-          cell.createdDateLabel.text = dateCreated[indexPath.row] as! String
-        }
-        
-        
+        cell.taskToDoLabel.text = item.taskName
+        cell.createdDateLabel.text = "\(item.dateCreated)"
         return cell
-        
-        
+    
     }
+    
+}
+    
+extension ToDoViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let detailviewcontroller = storyboard?.instantiateViewController(withIdentifier: "DetailViewController") as! TODODetailViewController
+        let item = todos[indexPath.row]
         
-        detailviewcontroller.detailLabel = todoItem.taskName[indexPath.row]
-        
+        let detailviewcontroller = storyboard?.instantiateViewController(withIdentifier: "DetailViewController") as! ToDoDetailViewController
+        detailviewcontroller.titleLabel = item.taskName
+        detailviewcontroller.dateCreated = "\(item.dateCreated)"
+        detailviewcontroller.dateEnded = "\(item.dateCompleted)"
+
         self.present(detailviewcontroller, animated: true, completion: nil)
     }
     
@@ -153,12 +105,13 @@ extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
            }
            let alert = UIAlertController(title: "", message: "Edit list item", preferredStyle: .alert)
            alert.addTextField(configurationHandler: { (textField) in
-               textField.text = self.todoItem.taskName[indexPath.row]
+               textField.text = self.todos[indexPath.row].taskName
                
            })
            alert.addAction(UIAlertAction(title: "Update", style: .default, handler: { (updateAction) in
-               self.todoItem.taskName[indexPath.row] = alert.textFields!.first!.text!
-               self.todoTableView.reloadRows(at: [indexPath], with: .fade)
+               self.todos[indexPath.row].taskName = alert.textFields!.first!.text!
+              // self.todoTableView.reloadRows(at: [indexPath], with: .fade)
+               self.todoTableView.reloadData()
               
            }))
            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -166,7 +119,7 @@ extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
        })
 
        let deleteAction = UITableViewRowAction(style: .default, title: "Delete", handler: { (action, indexPath) in
-           self.todoItem.taskName.remove(at: indexPath.row)
+           self.todos.remove(at: indexPath.row).taskName 
            DispatchQueue.main.async {
                self.todoTableView.reloadData()
            }
@@ -177,5 +130,6 @@ extension ToDoViewController: UITableViewDataSource, UITableViewDelegate {
    }
     
     
-}
 
+
+}

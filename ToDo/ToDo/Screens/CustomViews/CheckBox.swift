@@ -7,15 +7,19 @@
 
 import UIKit
 
+protocol InformingDelegate {
+    func valueChanged(_ newString:String) 
+}
 
 
-class CheckBox: UIButton, InformingDelegate {
+
+class CheckBox:  UIButton {
     
-
+    var delegate: InformingDelegate? = nil
     
     var changedDate:String = ""
     
-    
+    var newVC = ToDoViewController()
     
     func valueChanged(_ newString:String) -> String {
         
@@ -42,11 +46,13 @@ class CheckBox: UIButton, InformingDelegate {
          didSet {
           
              if isChecked == true {
-                 let vc1 = ToDoViewController()
-                 changedDate = vc1.currentDate()
                  
-                 valueChanged(changedDate)
-                 vc1.dateEnded = changedDate
+                 if (delegate == nil) {
+                   changedDate = newVC.currentDate()
+                     delegate?.valueChanged(changedDate)
+                     print("check box date", changedDate)
+                 }
+               
                 
               
                  self.setImage(checkedImage, for: UIControl.State.normal)
@@ -55,8 +61,10 @@ class CheckBox: UIButton, InformingDelegate {
                 
                 
              } else {
-                 changedDate = ""
+                 changedDate = "in progress"
                  valueChanged(changedDate)
+//               
+//                 UserDefaults.standard.set(self.newVC.dateEnded    , forKey: "endDate")
                  self.setImage(uncheckedImage, for: UIControl.State.normal)
              }
          }

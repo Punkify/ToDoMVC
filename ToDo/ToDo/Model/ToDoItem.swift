@@ -9,18 +9,10 @@ import Foundation
 
 struct TodoItem {
     
-    var taskName = [String]()
-    var isCompleted: Bool?
-    var dateCreated = [String]()
-    var dateCompleted: Date?
-    
-//    init(taskName: String?, isCompleted: Bool?, dateCreated: String?, dateCompleted: Date?) {
-//        self.taskName = taskName
-//        self.isCompleted = isCompleted
-//        self.dateCreated = dateCreated
-//        self.dateCompleted = dateCompleted
-//
-//        }
+    var taskName:String    
+    var isCompleted: Bool? = false
+    var dateCreated:Date = Date()
+    var dateCompleted:Date = Date()
     
 }
 
